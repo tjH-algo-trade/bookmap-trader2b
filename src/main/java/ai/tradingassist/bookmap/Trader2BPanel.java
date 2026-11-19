@@ -25,7 +25,7 @@ public class Trader2BPanel implements CustomModule, CustomSettingsPanelProvider 
     private final JTextField orderId = new JTextField("", 36);
     private final JSpinner quantity = new JSpinner(new SpinnerNumberModel(1, 1, 10000, 1));
     private final JCheckBox armed = new JCheckBox("Enable external PAPER orders");
-    private final JTextArea output = new JTextArea(12, 50);
+    private final JTextArea output = new JTextArea(new BoundedLogDocument(), "", 12, 50);
     private final JButton buy = new JButton("Buy"), sell = new JButton("Sell"),
         cancel = new JButton("Cancel order"), status = new JButton("Lookup order"), health = new JButton("Check API");
     private boolean busy;

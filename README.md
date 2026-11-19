@@ -36,6 +36,11 @@ Sell may open a short. This prototype supports integer shares, market/day orders
 ## API behavior
 
 Requests run on one background worker; Swing updates run on its event thread.
+An eight-second deadline covers the complete HTTP response, including its body.
+Timeouts cancel the local request; they do not undo an order received by the backend.
+Responses larger than 64 KiB are rejected. A timeout, interruption, or oversized
+response to a mutation leaves its outcome unknown and requires reconciliation.
+The UI log retains only its newest 131,072 characters.
 Each new order gets a UUID, sent as `client_order_id` and `Idempotency-Key`.
 No mutation is automatically retried. A timeout is an unknown outcome, not a
 rejection. Reconcile against your broker before creating another order.
@@ -63,20 +68,27 @@ No HTTP redirects are followed. Configuration is intentionally not persisted yet
 
 ## Build/test on macOS or Linux
 
-Install a full JDK 21, then run:
+Install a full JDK 21 or newer, then run (set `JAVA_HOME` if needed):
 
 ```bash
 bash build.sh
 ```
 
+The build checks the compiler version, cleans compiled output, and uses
+`--release 21` so newer JDKs still produce Java 21 compatible classes.
+
 The tests run a local in-process HTTP server. They cover buy/sell payloads,
 authentication, idempotency headers, lookup, cancellation, HTTP rejection,
 redirect refusal, timeout/no retry, and invalid URL/symbol/quantity inputs.
+Additional regression tests cover stalled response bodies, recovery after a
+timeout, chunked response size limits, interruption, and bounded UI log retention.
 They do not place real orders.
 
 ## Status
 
-Compiled and HTTP integration tests passed in a Linux Java 21 environment.
+The imported prototype was compiled and tested in a Linux Java 21 environment.
+The response deadline, size limits, and build fixes were compiled with JDK 24
+targeting Java 21 and passed both test suites on macOS.
 Not yet tested inside Bookmap, against your FastAPI service, or against Trader2B.
 Before live support, integrate actual response schemas, durable reconciliation,
 account/environment verification, and lifecycle testing in Bookmap.

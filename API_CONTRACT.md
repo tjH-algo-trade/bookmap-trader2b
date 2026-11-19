@@ -6,7 +6,10 @@ in your service. Send your actual OpenAPI schema later if you prefer other paths
 Base URL default: `http://127.0.0.1:8000`. A base path such as `/bookmap` is allowed.
 Authentication: `Authorization: Bearer <bridge-token>` (omitted when UI is blank).
 Require authentication in deployed configurations. Broker credentials stay server-side.
-All responses should be small JSON documents; do not return credentials or secrets.
+All responses must be at most 64 KiB; do not return credentials or secrets.
+The client enforces an eight-second deadline for the entire response, including
+the body. An oversized or timed-out mutation response requires reconciliation;
+canceling the local HTTP request does not cancel a broker order.
 
 ## 1. GET /health
 
